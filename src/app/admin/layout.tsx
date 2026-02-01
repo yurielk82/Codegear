@@ -58,7 +58,7 @@ export default function AdminLayout({
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === "codegear2024") {
+    if (password === "qw1212") {
       saveLoginState(true);
       setLoginError("");
     } else {
@@ -129,10 +129,6 @@ export default function AdminLayout({
                 로그인
               </button>
             </form>
-
-            <p className="text-center text-gray-500 text-xs mt-6">
-              데모 비밀번호: codegear2024
-            </p>
 
             <div className="mt-6 pt-6 border-t border-white/10 text-center">
               <Link 
