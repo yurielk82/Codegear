@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ReactNode, ButtonHTMLAttributes } from "react";
+import { ReactNode } from "react";
 
-interface GlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface GlassButtonProps {
   children: ReactNode;
   variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
@@ -11,6 +11,10 @@ interface GlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   iconPosition?: "left" | "right";
   loading?: boolean;
   fullWidth?: boolean;
+  className?: string;
+  disabled?: boolean;
+  onClick?: () => void;
+  type?: "button" | "submit" | "reset";
 }
 
 const variantStyles = {
@@ -58,10 +62,12 @@ export function GlassButton({
   fullWidth = false,
   className = "",
   disabled,
-  ...props
+  onClick,
+  type = "button",
 }: GlassButtonProps) {
   return (
     <motion.button
+      type={type}
       className={`
         inline-flex items-center justify-center
         font-medium rounded-xl
@@ -76,7 +82,7 @@ export function GlassButton({
       whileHover={{ scale: disabled ? 1 : 1.02 }}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
       disabled={disabled || loading}
-      {...props}
+      onClick={onClick}
     >
       {loading && (
         <svg
