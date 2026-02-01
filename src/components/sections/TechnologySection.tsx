@@ -7,8 +7,8 @@ import { Cpu, Wrench, Package, Lightbulb } from "lucide-react";
 const technologyCategories = [
   {
     id: "rd-engineering",
-    title: "R&D & Engineering",
-    titleKr: "연구개발 및 엔지니어링",
+    title: "연구개발 및 엔지니어링",
+    subtitle: "R&D & Engineering",
     icon: Cpu,
     gradient: "from-blue-500 to-cyan-500",
     items: [
@@ -20,8 +20,8 @@ const technologyCategories = [
   },
   {
     id: "manufacturing",
-    title: "Manufacturing & Prototype",
-    titleKr: "제조 및 시제품",
+    title: "제조 및 시제품",
+    subtitle: "Manufacturing & Prototype",
     icon: Wrench,
     gradient: "from-purple-500 to-pink-500",
     items: [
@@ -33,8 +33,8 @@ const technologyCategories = [
   },
   {
     id: "distribution",
-    title: "Distribution & Trade",
-    titleKr: "유통 및 무역",
+    title: "유통 및 무역",
+    subtitle: "Distribution & Trade",
     icon: Package,
     gradient: "from-orange-500 to-red-500",
     items: [
@@ -45,8 +45,8 @@ const technologyCategories = [
   },
   {
     id: "consulting",
-    title: "Consulting & IP",
-    titleKr: "컨설팅 및 지식재산",
+    title: "컨설팅 및 지식재산",
+    subtitle: "Consulting & IP",
     icon: Lightbulb,
     gradient: "from-green-500 to-emerald-500",
     items: [
@@ -85,45 +85,51 @@ export function TechnologySection() {
           </p>
         </motion.div>
 
-        {/* Technology Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Technology Cards Grid - 원본 TechCard 스타일 유지 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {technologyCategories.map((category, index) => (
             <motion.div
               key={category.id}
-              initial={{ opacity: 0, y: 20 }}
+              className="glass-card p-6 relative overflow-hidden group"
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="glass-card group hover:border-white/20 transition-all duration-300"
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
+              whileHover={{ scale: 1.02 }}
             >
-              <div className="p-6">
-                {/* Header */}
-                <div className="flex items-start gap-4 mb-5">
-                  <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}
-                  >
-                    <category.icon size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-0.5">
-                      {category.title}
-                    </h3>
-                    <p className="text-gray-500 text-sm">{category.titleKr}</p>
-                  </div>
-                </div>
+              {/* Gradient accent line */}
+              <div
+                className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${category.gradient} opacity-80`}
+              />
 
-                {/* Items */}
-                <div className="flex flex-wrap gap-2">
-                  {category.items.map((item, itemIndex) => (
-                    <span
-                      key={itemIndex}
-                      className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-300 text-sm border border-white/5 hover:bg-white/10 hover:border-white/10 transition-colors"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
+              {/* Icon container */}
+              <div
+                className={`w-12 h-12 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
+              >
+                <category.icon size={24} className="text-white" />
               </div>
+
+              {/* Content */}
+              <h3 className="text-xl font-bold text-white mb-1">{category.title}</h3>
+              <p className="text-sm text-blue-400 mb-4">{category.subtitle}</p>
+              
+              {/* Items list */}
+              <ul className="space-y-2">
+                {category.items.map((item, itemIndex) => (
+                  <li
+                    key={itemIndex}
+                    className="text-gray-400 text-sm flex items-center gap-2"
+                  >
+                    <span className="w-1 h-1 rounded-full bg-gray-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+
+              {/* Hover glow effect */}
+              <div
+                className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300 rounded-[20px]`}
+              />
             </motion.div>
           ))}
         </div>
