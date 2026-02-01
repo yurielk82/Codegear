@@ -69,6 +69,8 @@ export default function AdminLayout({
   const handleLogout = () => {
     saveLoginState(false);
     setPassword("");
+    // 로그아웃 시 메인 사이트로 리다이렉트
+    window.location.href = "https://www.codeg.co.kr/";
   };
 
   // 페이지 이동 시 모바일 사이드바 닫기

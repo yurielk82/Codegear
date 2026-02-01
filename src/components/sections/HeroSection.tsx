@@ -14,19 +14,23 @@ export function HeroSection() {
     ctaText: siteConfig.hero.ctaText,
   });
 
-  // LocalStorage에서 admin이 수정한 Hero 데이터 로드
+  // 서버에서 Hero 데이터 로드
   useEffect(() => {
-    const stored = localStorage.getItem("admin-hero");
-    if (stored) {
+    async function fetchHeroConfig() {
       try {
-        const parsed = JSON.parse(stored);
-        if (parsed && typeof parsed === "object") {
-          setHeroConfig((prev) => ({ ...prev, ...parsed }));
+        const response = await fetch("/api/admin?type=hero", {
+          cache: "no-store",
+        });
+        const result = await response.json();
+        if (result.success && result.data) {
+          setHeroConfig((prev) => ({ ...prev, ...result.data }));
         }
-      } catch {
-        // 파싱 실패 시 기본 데이터 사용
+      } catch (error) {
+        console.error("Failed to fetch hero config:", error);
+        // API 실패 시 기본 데이터 유지
       }
     }
+    fetchHeroConfig();
   }, []);
 
   const scrollToTechnology = () => {

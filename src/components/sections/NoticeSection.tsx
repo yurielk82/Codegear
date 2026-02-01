@@ -2,29 +2,35 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { DraggableTable } from "@/components/ui/DraggableTable";
 import { defaultNoticeColumns, sampleNotices } from "@/config/siteConfig";
-import { X, ExternalLink } from "lucide-react";
+import { X, ExternalLink, Eye, Loader2 } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
 import type { Notice } from "@/types";
 
 export function NoticeSection() {
   const [notices, setNotices] = useState<Notice[]>(sampleNotices);
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // LocalStorage에서 admin이 수정한 공고 데이터 로드
+  // 서버에서 공고 데이터 로드
   useEffect(() => {
-    const stored = localStorage.getItem("admin-notices");
-    if (stored) {
+    async function fetchNotices() {
       try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setNotices(parsed);
+        const response = await fetch("/api/admin?type=notices", {
+          cache: "no-store",
+        });
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+          setNotices(result.data);
         }
-      } catch {
-        // 파싱 실패 시 기본 데이터 사용
+      } catch (error) {
+        console.error("Failed to fetch notices:", error);
+        // API 실패 시 기본 데이터 유지
+      } finally {
+        setLoading(false);
       }
     }
+    fetchNotices();
   }, []);
 
   const handleRowClick = (notice: Notice) => {
@@ -60,19 +66,77 @@ export function NoticeSection() {
           </p>
         </motion.div>
 
-        {/* Draggable Table */}
+        {/* Notice Table (읽기 전용 - 드래그 불가) */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
+          className="glass-card overflow-hidden"
         >
-          <DraggableTable
-            tableId="public-notices"
-            columns={defaultNoticeColumns}
-            data={notices}
-            onRowClick={handleRowClick}
-          />
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/10">
+                    {defaultNoticeColumns.map((column) => (
+                      <th
+                        key={column.id}
+                        className="text-left py-4 px-4 text-gray-400 font-medium text-sm"
+                        style={{ width: column.width }}
+                      >
+                        {column.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {notices.map((notice) => (
+                    <tr
+                      key={notice.id}
+                      onClick={() => handleRowClick(notice)}
+                      className="border-b border-white/5 hover:bg-white/[0.02] cursor-pointer transition-colors"
+                    >
+                      <td className="py-4 px-4 text-gray-500">{notice.id}</td>
+                      <td className="py-4 px-4">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            notice.category === "채용"
+                              ? "bg-blue-500/20 text-blue-400"
+                              : notice.category === "공지"
+                              ? "bg-green-500/20 text-green-400"
+                              : "bg-purple-500/20 text-purple-400"
+                          }`}
+                        >
+                          {notice.category}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4 text-white hover:text-blue-400 transition-colors">
+                        {notice.title}
+                      </td>
+                      <td className="py-4 px-4 text-gray-500">{notice.date}</td>
+                      <td className="py-4 px-4 text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <Eye size={14} />
+                          {notice.views.toLocaleString()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {!loading && notices.length === 0 && (
+            <div className="py-12 text-center text-gray-500">
+              등록된 공고가 없습니다.
+            </div>
+          )}
         </motion.div>
 
         {/* View All Link */}

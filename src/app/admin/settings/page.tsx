@@ -1,63 +1,76 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Save, RotateCcw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Save, RotateCcw, Loader2 } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { siteConfig } from "@/config/siteConfig";
+import { useCompanyInfo, useSocialLinks } from "@/hooks/useAdminData";
 
 export default function SettingsAdminPage() {
-  const [companyInfo, setCompanyInfo] = useLocalStorage("admin-company", {
-    name: siteConfig.company.name,
-    nameEn: siteConfig.company.nameEn,
-    ceo: siteConfig.company.ceo,
-    address: siteConfig.company.address,
-    addressDetail: siteConfig.company.addressDetail,
-    businessNumber: siteConfig.company.businessNumber,
-    phone: siteConfig.company.phone,
-    fax: siteConfig.company.fax,
-    email: siteConfig.company.email,
-    copyrightYear: siteConfig.company.copyrightYear,
-  });
+  const { 
+    data: companyInfo, 
+    setData: setCompanyInfo, 
+    loading: companyLoading, 
+    saving: companySaving,
+    saveData: saveCompany,
+    resetData: resetCompany 
+  } = useCompanyInfo();
+  
+  const { 
+    data: socialLinks, 
+    setData: setSocialLinks, 
+    loading: socialLoading, 
+    saving: socialSaving,
+    saveData: saveSocial,
+    resetData: resetSocial 
+  } = useSocialLinks();
 
-  const [socialLinks, setSocialLinks] = useLocalStorage("admin-social", {
-    github: siteConfig.social.github,
-    linkedin: siteConfig.social.linkedin,
-    twitter: siteConfig.social.twitter,
-  });
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
-  const [isSaved, setIsSaved] = useState(false);
+  const loading = companyLoading || socialLoading;
+  const saving = companySaving || socialSaving;
 
-  const handleSave = () => {
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2000);
-  };
-
-  const handleReset = () => {
-    if (confirm("모든 설정을 초기 상태로 되돌리시겠습니까?")) {
-      setCompanyInfo({
-        name: siteConfig.company.name,
-        nameEn: siteConfig.company.nameEn,
-        ceo: siteConfig.company.ceo,
-        address: siteConfig.company.address,
-        addressDetail: siteConfig.company.addressDetail,
-        businessNumber: siteConfig.company.businessNumber,
-        phone: siteConfig.company.phone,
-        fax: siteConfig.company.fax,
-        email: siteConfig.company.email,
-        copyrightYear: siteConfig.company.copyrightYear,
-      });
-      setSocialLinks({
-        github: siteConfig.social.github,
-        linkedin: siteConfig.social.linkedin,
-        twitter: siteConfig.social.twitter,
-      });
+  const handleSave = async () => {
+    const companySuccess = await saveCompany(companyInfo);
+    const socialSuccess = await saveSocial(socialLinks);
+    
+    if (companySuccess && socialSuccess) {
+      setSaveMessage("저장되었습니다!");
+      setTimeout(() => setSaveMessage(null), 2000);
     }
   };
 
+  const handleReset = async () => {
+    if (confirm("모든 설정을 초기 상태로 되돌리시겠습니까?")) {
+      await resetCompany();
+      await resetSocial();
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 lg:p-8">
+      {/* Save Message Toast */}
+      <AnimatePresence>
+        {saveMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-4 right-4 z-50 bg-green-500/90 text-white px-6 py-3 rounded-lg shadow-lg"
+          >
+            {saveMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -68,11 +81,13 @@ export default function SettingsAdminPage() {
           <h1 className="text-3xl font-bold text-white mb-2">사이트 설정</h1>
           <p className="text-gray-400">
             회사 정보 및 푸터에 표시될 내용을 수정할 수 있습니다.
+            <span className="text-green-400 ml-2">✓ 서버에 저장됨</span>
           </p>
         </div>
         <button
           onClick={handleReset}
           className="flex items-center gap-2 text-gray-400 hover:text-white text-sm"
+          disabled={saving}
         >
           <RotateCcw size={14} />
           전체 초기화
@@ -324,10 +339,11 @@ export default function SettingsAdminPage() {
       >
         <GlassButton
           variant="primary"
-          icon={<Save size={18} />}
+          icon={saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
           onClick={handleSave}
+          disabled={saving}
         >
-          {isSaved ? "저장됨!" : "변경사항 저장"}
+          {saving ? "저장 중..." : "변경사항 저장"}
         </GlassButton>
       </motion.div>
     </div>

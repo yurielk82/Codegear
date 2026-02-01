@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Settings } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
 
 export function Header() {
@@ -116,16 +116,6 @@ export function Header() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-4">
-              {/* Admin Link */}
-              <button
-                type="button"
-                onClick={(e) => handleNavClick(e, "/admin")}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all text-sm cursor-pointer"
-              >
-                <Settings size={16} />
-                Admin
-              </button>
-
               {/* Mobile Menu Button */}
               <button
                 type="button"
@@ -184,22 +174,7 @@ export function Header() {
                   </motion.div>
                 ))}
                 
-                {/* Admin Link in Mobile */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="pt-4 border-t border-white/10"
-                >
-                  <button
-                    type="button"
-                    onClick={(e) => handleNavClick(e, "/admin")}
-                    className="flex items-center gap-2 py-3 text-gray-400 hover:text-white transition-colors w-full"
-                  >
-                    <Settings size={20} />
-                    Admin Dashboard
-                  </button>
-                </motion.div>
+
               </div>
             </motion.nav>
           </motion.div>

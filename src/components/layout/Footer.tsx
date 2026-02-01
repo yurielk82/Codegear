@@ -16,8 +16,6 @@ interface CompanyInfo {
   phone: string;
   fax: string;
   email: string;
-  businessStartYear: number;
-  foundedYear: number;
   copyrightYear: number;
 }
 
@@ -29,34 +27,47 @@ interface SocialLinks {
 
 export function Footer() {
   const [isBusinessPurposesOpen, setIsBusinessPurposesOpen] = useState(false);
-  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>(siteConfig.company);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
+    name: siteConfig.company.name,
+    nameEn: siteConfig.company.nameEn,
+    ceo: siteConfig.company.ceo,
+    address: siteConfig.company.address,
+    addressDetail: siteConfig.company.addressDetail,
+    businessNumber: siteConfig.company.businessNumber,
+    phone: siteConfig.company.phone,
+    fax: siteConfig.company.fax,
+    email: siteConfig.company.email,
+    copyrightYear: siteConfig.company.copyrightYear,
+  });
   const [socialLinks, setSocialLinks] = useState<SocialLinks>(siteConfig.social);
 
-  // LocalStorage에서 admin이 수정한 데이터 로드
+  // 서버에서 admin이 수정한 데이터 로드
   useEffect(() => {
-    const storedCompany = localStorage.getItem("admin-company");
-    if (storedCompany) {
+    async function fetchData() {
       try {
-        const parsed = JSON.parse(storedCompany);
-        if (parsed && typeof parsed === "object") {
-          setCompanyInfo((prev) => ({ ...prev, ...parsed }));
+        // 회사 정보 로드
+        const companyResponse = await fetch("/api/admin?type=company", {
+          cache: "no-store",
+        });
+        const companyResult = await companyResponse.json();
+        if (companyResult.success && companyResult.data) {
+          setCompanyInfo((prev) => ({ ...prev, ...companyResult.data }));
         }
-      } catch {
-        // 파싱 실패 시 기본 데이터 사용
-      }
-    }
 
-    const storedSocial = localStorage.getItem("admin-social");
-    if (storedSocial) {
-      try {
-        const parsed = JSON.parse(storedSocial);
-        if (parsed && typeof parsed === "object") {
-          setSocialLinks((prev) => ({ ...prev, ...parsed }));
+        // 소셜 링크 로드
+        const socialResponse = await fetch("/api/admin?type=social", {
+          cache: "no-store",
+        });
+        const socialResult = await socialResponse.json();
+        if (socialResult.success && socialResult.data) {
+          setSocialLinks((prev) => ({ ...prev, ...socialResult.data }));
         }
-      } catch {
-        // 파싱 실패 시 기본 데이터 사용
+      } catch (error) {
+        console.error("Failed to fetch footer data:", error);
+        // API 실패 시 기본 데이터 유지
       }
     }
+    fetchData();
   }, []);
 
   // Group business purposes by category
@@ -187,10 +198,10 @@ export function Footer() {
                 대표: {companyInfo.ceo}
               </p>
               <p className="text-gray-500 text-sm mt-1">
-                창업: {companyInfo.businessStartYear}년 (개인사업자)
+                창업: {siteConfig.company.businessStartYear}년 (개인사업자)
               </p>
               <p className="text-gray-500 text-sm mt-1">
-                법인설립: {companyInfo.foundedYear}년
+                법인설립: {siteConfig.company.foundedYear}년
               </p>
             </div>
           </div>

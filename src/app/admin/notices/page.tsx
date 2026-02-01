@@ -10,18 +10,26 @@ import {
   Eye,
   X,
   Save,
-  Calendar,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
-import { sampleNotices } from "@/config/siteConfig";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useNotices } from "@/hooks/useAdminData";
 import type { Notice } from "@/types";
 
 export default function NoticesAdminPage() {
-  const [notices, setNotices] = useLocalStorage<Notice[]>(
-    "admin-notices",
-    sampleNotices
-  );
+  const { 
+    notices, 
+    loading, 
+    error, 
+    saving,
+    addNotice, 
+    updateNotice, 
+    deleteNotice, 
+    resetData,
+    refetch 
+  } = useNotices();
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,6 +39,7 @@ export default function NoticesAdminPage() {
     title: "",
     content: "",
   });
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
   const categories = ["all", "채용", "공지", "뉴스"];
 
@@ -59,42 +68,79 @@ export default function NoticesAdminPage() {
     setIsModalOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.title.trim() || !formData.content.trim()) return;
 
+    let success: boolean;
+    
     if (editingNotice) {
       // Update existing notice
-      setNotices(
-        notices.map((n) =>
-          n.id === editingNotice.id
-            ? { ...n, ...formData }
-            : n
-        )
-      );
+      success = await updateNotice(editingNotice.id, formData);
     } else {
       // Create new notice
-      const newNotice: Notice = {
-        id: Math.max(...notices.map((n) => n.id)) + 1,
-        category: formData.category,
-        title: formData.title,
-        content: formData.content,
-        date: new Date().toISOString().split("T")[0],
-        views: 0,
-      };
-      setNotices([newNotice, ...notices]);
+      success = await addNotice(formData);
     }
 
-    setIsModalOpen(false);
+    if (success) {
+      setSaveMessage("저장되었습니다!");
+      setTimeout(() => setSaveMessage(null), 2000);
+      setIsModalOpen(false);
+    }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm("정말 삭제하시겠습니까?")) {
-      setNotices(notices.filter((n) => n.id !== id));
+      const success = await deleteNotice(id);
+      if (success) {
+        setSaveMessage("삭제되었습니다!");
+        setTimeout(() => setSaveMessage(null), 2000);
+      }
     }
   };
+
+  const handleReset = async () => {
+    if (confirm("모든 공고를 초기 상태로 되돌리시겠습니까?")) {
+      await resetData();
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 lg:p-8">
+        <div className="admin-card text-center py-12">
+          <p className="text-red-400 mb-4">{error}</p>
+          <GlassButton variant="secondary" onClick={refetch}>
+            다시 시도
+          </GlassButton>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-8">
+      {/* Save Message Toast */}
+      <AnimatePresence>
+        {saveMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-4 right-4 z-50 bg-green-500/90 text-white px-6 py-3 rounded-lg shadow-lg"
+          >
+            {saveMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -103,15 +149,28 @@ export default function NoticesAdminPage() {
       >
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">공고 관리</h1>
-          <p className="text-gray-400">공고글을 작성, 수정, 삭제할 수 있습니다.</p>
+          <p className="text-gray-400">
+            공고글을 작성, 수정, 삭제할 수 있습니다.
+            <span className="text-green-400 ml-2">✓ 서버에 저장됨</span>
+          </p>
         </div>
-        <GlassButton
-          variant="primary"
-          icon={<Plus size={18} />}
-          onClick={openCreateModal}
-        >
-          새 공고 작성
-        </GlassButton>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleReset}
+            className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
+            title="초기화"
+          >
+            <RefreshCw size={18} />
+          </button>
+          <GlassButton
+            variant="primary"
+            icon={<Plus size={18} />}
+            onClick={openCreateModal}
+            disabled={saving}
+          >
+            새 공고 작성
+          </GlassButton>
+        </div>
       </motion.div>
 
       {/* Filters */}
@@ -223,12 +282,14 @@ export default function NoticesAdminPage() {
                         <button
                           onClick={() => openEditModal(notice)}
                           className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
+                          disabled={saving}
                         >
                           <Edit2 size={16} />
                         </button>
                         <button
                           onClick={() => handleDelete(notice.id)}
                           className="p-2 hover:bg-red-500/20 rounded-lg text-gray-400 hover:text-red-400 transition-colors"
+                          disabled={saving}
                         >
                           <Trash2 size={16} />
                         </button>
@@ -330,10 +391,11 @@ export default function NoticesAdminPage() {
                 <div className="flex items-center gap-4 mt-8">
                   <GlassButton
                     variant="primary"
-                    icon={<Save size={18} />}
+                    icon={saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                     onClick={handleSave}
+                    disabled={saving}
                   >
-                    {editingNotice ? "수정 완료" : "작성 완료"}
+                    {saving ? "저장 중..." : editingNotice ? "수정 완료" : "작성 완료"}
                   </GlassButton>
                   <GlassButton
                     variant="secondary"
