@@ -1,13 +1,63 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ChevronDown, Mail, Phone, MapPin, Github, Linkedin, Twitter } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
 
+interface CompanyInfo {
+  name: string;
+  nameEn: string;
+  ceo: string;
+  address: string;
+  addressDetail: string;
+  businessNumber: string;
+  phone: string;
+  fax: string;
+  email: string;
+  businessStartYear: number;
+  foundedYear: number;
+  copyrightYear: number;
+}
+
+interface SocialLinks {
+  github: string;
+  linkedin: string;
+  twitter: string;
+}
+
 export function Footer() {
   const [isBusinessPurposesOpen, setIsBusinessPurposesOpen] = useState(false);
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>(siteConfig.company);
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>(siteConfig.social);
+
+  // LocalStorage에서 admin이 수정한 데이터 로드
+  useEffect(() => {
+    const storedCompany = localStorage.getItem("admin-company");
+    if (storedCompany) {
+      try {
+        const parsed = JSON.parse(storedCompany);
+        if (parsed && typeof parsed === "object") {
+          setCompanyInfo((prev) => ({ ...prev, ...parsed }));
+        }
+      } catch {
+        // 파싱 실패 시 기본 데이터 사용
+      }
+    }
+
+    const storedSocial = localStorage.getItem("admin-social");
+    if (storedSocial) {
+      try {
+        const parsed = JSON.parse(storedSocial);
+        if (parsed && typeof parsed === "object") {
+          setSocialLinks((prev) => ({ ...prev, ...parsed }));
+        }
+      } catch {
+        // 파싱 실패 시 기본 데이터 사용
+      }
+    }
+  }, []);
 
   // Group business purposes by category
   const groupedPurposes = siteConfig.businessPurposes.reduce((acc, purpose) => {
@@ -32,7 +82,7 @@ export function Footer() {
               </div>
               <div>
                 <span className="text-white font-bold text-2xl block">Code Gear</span>
-                <span className="text-gray-500 text-sm">{siteConfig.company.name}</span>
+                <span className="text-gray-500 text-sm">{companyInfo.name}</span>
               </div>
             </div>
 
@@ -43,25 +93,25 @@ export function Footer() {
             {/* Contact Info */}
             <div className="space-y-3">
               <a
-                href={`mailto:${siteConfig.company.email}`}
+                href={`mailto:${companyInfo.email}`}
                 className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors"
               >
                 <Mail size={18} className="text-blue-400" />
-                {siteConfig.company.email}
+                {companyInfo.email}
               </a>
               <a
-                href={`tel:${siteConfig.company.phone}`}
+                href={`tel:${companyInfo.phone}`}
                 className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors"
               >
                 <Phone size={18} className="text-blue-400" />
-                {siteConfig.company.phone}
+                {companyInfo.phone}
               </a>
               <div className="flex items-start gap-3 text-gray-400">
                 <MapPin size={18} className="text-blue-400 mt-0.5" />
                 <span>
-                  {siteConfig.company.address}
+                  {companyInfo.address}
                   <br />
-                  {siteConfig.company.addressDetail}
+                  {companyInfo.addressDetail}
                 </span>
               </div>
             </div>
@@ -69,7 +119,7 @@ export function Footer() {
             {/* Social Links */}
             <div className="flex items-center gap-4 mt-6">
               <a
-                href={siteConfig.social.github}
+                href={socialLinks.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
@@ -77,7 +127,7 @@ export function Footer() {
                 <Github size={20} />
               </a>
               <a
-                href={siteConfig.social.linkedin}
+                href={socialLinks.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
@@ -85,7 +135,7 @@ export function Footer() {
                 <Linkedin size={20} />
               </a>
               <a
-                href={siteConfig.social.twitter}
+                href={socialLinks.twitter}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
@@ -131,16 +181,16 @@ export function Footer() {
             {/* Business Info */}
             <div className="mt-6 pt-6 border-t border-white/10">
               <p className="text-gray-500 text-sm">
-                사업자등록번호: {siteConfig.company.businessNumber}
+                사업자등록번호: {companyInfo.businessNumber}
               </p>
               <p className="text-gray-500 text-sm mt-1">
-                대표: {siteConfig.company.ceo}
+                대표: {companyInfo.ceo}
               </p>
               <p className="text-gray-500 text-sm mt-1">
-                창업: {siteConfig.company.businessStartYear}년 (개인사업자)
+                창업: {companyInfo.businessStartYear}년 (개인사업자)
               </p>
               <p className="text-gray-500 text-sm mt-1">
-                법인설립: {siteConfig.company.foundedYear}년
+                법인설립: {companyInfo.foundedYear}년
               </p>
             </div>
           </div>
@@ -201,7 +251,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-gray-500 text-sm text-center md:text-left">
-              © {siteConfig.company.copyrightYear} {siteConfig.company.name}. All rights reserved.
+              © {companyInfo.copyrightYear} {companyInfo.name}. All rights reserved.
             </p>
             <p className="text-gray-600 text-xs">
               Designed with <span className="text-red-400">♥</span> by Code Gear Team

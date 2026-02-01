@@ -276,9 +276,9 @@ export function DraggableTable({
     <div className="w-full">
       {/* Table Header with Reset Button */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-sm text-gray-400">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
           <GripVertical size={16} />
-          <span>컬럼을 드래그하여 순서를 변경하거나, 테두리를 드래그하여 너비를 조절하세요</span>
+          <span>테이블 레이아웃을 사용자 설정할 수 있습니다 (브라우저에 저장됨)</span>
         </div>
         <button
           onClick={resetToDefault}

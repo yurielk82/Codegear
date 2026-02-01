@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
@@ -7,6 +8,27 @@ import { PolygonBackground } from "./PolygonBackground";
 import { siteConfig } from "@/config/siteConfig";
 
 export function HeroSection() {
+  const [heroConfig, setHeroConfig] = useState({
+    mainCopy: siteConfig.hero.mainCopy,
+    subCopy: siteConfig.hero.subCopy,
+    ctaText: siteConfig.hero.ctaText,
+  });
+
+  // LocalStorage에서 admin이 수정한 Hero 데이터 로드
+  useEffect(() => {
+    const stored = localStorage.getItem("admin-hero");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object") {
+          setHeroConfig((prev) => ({ ...prev, ...parsed }));
+        }
+      } catch {
+        // 파싱 실패 시 기본 데이터 사용
+      }
+    }
+  }, []);
+
   const scrollToTechnology = () => {
     document.getElementById("technology")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -56,7 +78,7 @@ export function HeroSection() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          {siteConfig.hero.subCopy}
+          {heroConfig.subCopy}
         </motion.p>
 
         {/* CTA Buttons */}
@@ -73,7 +95,7 @@ export function HeroSection() {
             iconPosition="right"
             onClick={scrollToTechnology}
           >
-            {siteConfig.hero.ctaText}
+            {heroConfig.ctaText}
           </GlassButton>
 
           <GlassButton

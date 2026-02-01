@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DraggableTable } from "@/components/ui/DraggableTable";
 import { defaultNoticeColumns, sampleNotices } from "@/config/siteConfig";
@@ -9,7 +9,23 @@ import { GlassButton } from "@/components/ui/GlassButton";
 import type { Notice } from "@/types";
 
 export function NoticeSection() {
+  const [notices, setNotices] = useState<Notice[]>(sampleNotices);
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
+
+  // LocalStorage에서 admin이 수정한 공고 데이터 로드
+  useEffect(() => {
+    const stored = localStorage.getItem("admin-notices");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setNotices(parsed);
+        }
+      } catch {
+        // 파싱 실패 시 기본 데이터 사용
+      }
+    }
+  }, []);
 
   const handleRowClick = (notice: Notice) => {
     setSelectedNotice(notice);
@@ -41,8 +57,6 @@ export function NoticeSection() {
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
             Code Gear의 최신 채용 공고 및 회사 소식을 확인하세요.
-            <br />
-            컬럼을 드래그하여 원하는 순서로 정렬할 수 있습니다.
           </p>
         </motion.div>
 
@@ -56,7 +70,7 @@ export function NoticeSection() {
           <DraggableTable
             tableId="public-notices"
             columns={defaultNoticeColumns}
-            data={sampleNotices}
+            data={notices}
             onRowClick={handleRowClick}
           />
         </motion.div>
