@@ -136,6 +136,12 @@ export function Footer() {
               <p className="text-gray-500 text-sm mt-1">
                 대표: {siteConfig.company.ceo}
               </p>
+              <p className="text-gray-500 text-sm mt-1">
+                창업: {siteConfig.company.businessStartYear}년 (개인사업자)
+              </p>
+              <p className="text-gray-500 text-sm mt-1">
+                법인설립: {siteConfig.company.foundedYear}년
+              </p>
             </div>
           </div>
         </div>

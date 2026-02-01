@@ -97,7 +97,8 @@ export const siteConfig = {
     phone: "041-XXX-XXXX",
     fax: "041-XXX-XXXX",
     email: "contact@codegear.co.kr",
-    foundedYear: 2024,
+    businessStartYear: 2018,  // 개인사업자 시작 연도
+    foundedYear: 2026,        // 법인설립 연도
     copyrightYear: new Date().getFullYear(),
   },
 

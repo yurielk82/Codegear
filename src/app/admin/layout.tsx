@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home,
@@ -31,7 +32,6 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useLocalStorage("admin-auth", false);
@@ -52,9 +52,8 @@ export default function AdminLayout({
     setIsLoggedIn(false);
   };
 
-  const navigateTo = (href: string) => {
+  const closeMobileSidebar = () => {
     setIsMobileSidebarOpen(false);
-    router.push(href);
   };
 
   // Login Screen
@@ -109,13 +108,12 @@ export default function AdminLayout({
             </p>
 
             <div className="mt-6 pt-6 border-t border-white/10 text-center">
-              <button 
-                type="button"
-                onClick={() => navigateTo("/")}
+              <Link 
+                href="/"
                 className="text-gray-400 hover:text-white text-sm"
               >
                 ← 메인 사이트로 돌아가기
-              </button>
+              </Link>
             </div>
           </div>
         </motion.div>
@@ -136,9 +134,8 @@ export default function AdminLayout({
       >
         {/* Logo */}
         <div className="p-6 border-b border-white/5">
-          <button 
-            type="button"
-            onClick={() => navigateTo("/")}
+          <Link 
+            href="/"
             className="flex items-center gap-3"
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
@@ -153,7 +150,7 @@ export default function AdminLayout({
                 Admin
               </motion.span>
             )}
-          </button>
+          </Link>
         </div>
 
         {/* Navigation */}
@@ -163,11 +160,10 @@ export default function AdminLayout({
               const isActive = pathname === item.href;
               return (
                 <li key={item.href}>
-                  <button
-                    type="button"
-                    onClick={() => navigateTo(item.href)}
+                  <Link
+                    href={item.href}
                     className={`
-                      flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer w-full text-left
+                      flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer w-full
                       ${
                         isActive
                           ? "bg-blue-500/20 text-blue-400"
@@ -177,7 +173,7 @@ export default function AdminLayout({
                   >
                     <item.icon size={20} />
                     {isSidebarOpen && <span>{item.name}</span>}
-                  </button>
+                  </Link>
                 </li>
               );
             })}
@@ -212,16 +208,15 @@ export default function AdminLayout({
 
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#12121a] border-b border-white/5 z-40 flex items-center justify-between px-4">
-        <button 
-          type="button"
-          onClick={() => navigateTo("/")}
+        <Link 
+          href="/"
           className="flex items-center gap-3"
         >
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
             <span className="text-white font-bold">CG</span>
           </div>
           <span className="text-white font-bold">Admin</span>
-        </button>
+        </Link>
         <button
           type="button"
           onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
@@ -240,7 +235,7 @@ export default function AdminLayout({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="lg:hidden fixed inset-0 bg-black/60 z-40"
-              onClick={() => setIsMobileSidebarOpen(false)}
+              onClick={closeMobileSidebar}
             />
             <motion.aside
               initial={{ x: "-100%" }}
@@ -255,11 +250,11 @@ export default function AdminLayout({
                     const isActive = pathname === item.href;
                     return (
                       <li key={item.href}>
-                        <button
-                          type="button"
-                          onClick={() => navigateTo(item.href)}
+                        <Link
+                          href={item.href}
+                          onClick={closeMobileSidebar}
                           className={`
-                            flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer w-full text-left
+                            flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer w-full
                             ${
                               isActive
                                 ? "bg-blue-500/20 text-blue-400"
@@ -269,7 +264,7 @@ export default function AdminLayout({
                         >
                           <item.icon size={20} />
                           <span>{item.name}</span>
-                        </button>
+                        </Link>
                       </li>
                     );
                   })}

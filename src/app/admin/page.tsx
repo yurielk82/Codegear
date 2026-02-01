@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   FileText,
@@ -51,12 +51,6 @@ const quickActions = [
 ];
 
 export default function AdminDashboard() {
-  const router = useRouter();
-
-  const handleNavClick = (href: string) => {
-    router.push(href);
-  };
-
   return (
     <div className="p-6 lg:p-8">
       {/* Header */}
@@ -114,11 +108,10 @@ export default function AdminDashboard() {
           <h2 className="text-lg font-semibold text-white mb-4">빠른 작업</h2>
           <div className="space-y-3">
             {quickActions.map((action) => (
-              <button
+              <Link
                 key={action.href}
-                type="button"
-                onClick={() => handleNavClick(action.href)}
-                className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group cursor-pointer w-full text-left"
+                href={action.href}
+                className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <action.icon size={18} className="text-blue-400" />
@@ -128,7 +121,7 @@ export default function AdminDashboard() {
                   size={16}
                   className="text-gray-500 group-hover:text-white transition-colors"
                 />
-              </button>
+              </Link>
             ))}
           </div>
         </motion.div>
@@ -142,13 +135,12 @@ export default function AdminDashboard() {
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white">최근 공고</h2>
-            <button
-              type="button"
-              onClick={() => handleNavClick("/admin/notices")}
-              className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1 cursor-pointer"
+            <Link
+              href="/admin/notices"
+              className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
             >
               전체 보기 <ArrowRight size={14} />
-            </button>
+            </Link>
           </div>
           <div className="space-y-3">
             {sampleNotices.slice(0, 4).map((notice) => (
