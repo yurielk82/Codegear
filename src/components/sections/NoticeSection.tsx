@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { DraggableTable } from "@/components/ui/DraggableTable";
 import { defaultNoticeColumns, sampleNotices } from "@/config/siteConfig";
-import { X, ExternalLink, Loader2 } from "lucide-react";
+import { X, ExternalLink } from "lucide-react";
 import { GlassButton } from "@/components/ui/GlassButton";
 import type { Notice } from "@/types";
 
 export function NoticeSection() {
+  // 항상 기본값으로 시작 (sampleNotices)
   const [notices, setNotices] = useState<Notice[]>(sampleNotices);
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
-  const [loading, setLoading] = useState(true);
 
   // 서버에서 공고 데이터 로드
   useEffect(() => {
@@ -20,15 +20,15 @@ export function NoticeSection() {
         const response = await fetch("/api/admin?type=notices", {
           cache: "no-store",
         });
-        const result = await response.json();
-        if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-          setNotices(result.data);
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+            setNotices(result.data);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch notices:", error);
-        // API 실패 시 기본 데이터 유지
-      } finally {
-        setLoading(false);
+        // API 실패 시 기본 데이터 유지 (sampleNotices)
       }
     }
     fetchNotices();
@@ -64,6 +64,8 @@ export function NoticeSection() {
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
             Code Gear의 최신 채용 공고 및 회사 소식을 확인하세요.
+            <br />
+            컬럼을 드래그하여 원하는 순서로 정렬할 수 있습니다.
           </p>
         </motion.div>
 
@@ -74,18 +76,12 @@ export function NoticeSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          {loading ? (
-            <div className="glass-card flex items-center justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-            </div>
-          ) : (
-            <DraggableTable
-              tableId="public-notices"
-              columns={defaultNoticeColumns}
-              data={notices}
-              onRowClick={handleRowClick}
-            />
-          )}
+          <DraggableTable
+            tableId="public-notices"
+            columns={defaultNoticeColumns}
+            data={notices}
+            onRowClick={handleRowClick}
+          />
         </motion.div>
 
         {/* View All Link */}

@@ -6,40 +6,11 @@ import Link from "next/link";
 import { ChevronDown, Mail, Phone, MapPin, Github, Linkedin, Twitter } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
 
-interface CompanyInfo {
-  name: string;
-  nameEn: string;
-  ceo: string;
-  address: string;
-  addressDetail: string;
-  businessNumber: string;
-  phone: string;
-  fax: string;
-  email: string;
-  copyrightYear: number;
-}
-
-interface SocialLinks {
-  github: string;
-  linkedin: string;
-  twitter: string;
-}
-
 export function Footer() {
   const [isBusinessPurposesOpen, setIsBusinessPurposesOpen] = useState(false);
-  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>({
-    name: siteConfig.company.name,
-    nameEn: siteConfig.company.nameEn,
-    ceo: siteConfig.company.ceo,
-    address: siteConfig.company.address,
-    addressDetail: siteConfig.company.addressDetail,
-    businessNumber: siteConfig.company.businessNumber,
-    phone: siteConfig.company.phone,
-    fax: siteConfig.company.fax,
-    email: siteConfig.company.email,
-    copyrightYear: siteConfig.company.copyrightYear,
-  });
-  const [socialLinks, setSocialLinks] = useState<SocialLinks>(siteConfig.social);
+  const [companyInfo, setCompanyInfo] = useState(siteConfig.company);
+  const [socialLinks, setSocialLinks] = useState(siteConfig.social);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // 서버에서 admin이 수정한 데이터 로드
   useEffect(() => {
@@ -49,22 +20,28 @@ export function Footer() {
         const companyResponse = await fetch("/api/admin?type=company", {
           cache: "no-store",
         });
-        const companyResult = await companyResponse.json();
-        if (companyResult.success && companyResult.data) {
-          setCompanyInfo((prev) => ({ ...prev, ...companyResult.data }));
+        if (companyResponse.ok) {
+          const companyResult = await companyResponse.json();
+          if (companyResult.success && companyResult.data) {
+            setCompanyInfo((prev) => ({ ...prev, ...companyResult.data }));
+          }
         }
 
         // 소셜 링크 로드
         const socialResponse = await fetch("/api/admin?type=social", {
           cache: "no-store",
         });
-        const socialResult = await socialResponse.json();
-        if (socialResult.success && socialResult.data) {
-          setSocialLinks((prev) => ({ ...prev, ...socialResult.data }));
+        if (socialResponse.ok) {
+          const socialResult = await socialResponse.json();
+          if (socialResult.success && socialResult.data) {
+            setSocialLinks((prev) => ({ ...prev, ...socialResult.data }));
+          }
         }
       } catch (error) {
         console.error("Failed to fetch footer data:", error);
-        // API 실패 시 기본 데이터 유지
+        // API 실패 시 기본 데이터 유지 (siteConfig)
+      } finally {
+        setIsLoaded(true);
       }
     }
     fetchData();
@@ -262,7 +239,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-gray-500 text-sm text-center md:text-left">
-              © {companyInfo.copyrightYear} {companyInfo.name}. All rights reserved.
+              © {companyInfo.copyrightYear || new Date().getFullYear()} {companyInfo.name}. All rights reserved.
             </p>
             <p className="text-gray-600 text-xs">
               Designed with <span className="text-red-400">♥</span> by Code Gear Team

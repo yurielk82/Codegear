@@ -8,11 +8,8 @@ import { PolygonBackground } from "./PolygonBackground";
 import { siteConfig } from "@/config/siteConfig";
 
 export function HeroSection() {
-  const [heroConfig, setHeroConfig] = useState({
-    mainCopy: siteConfig.hero.mainCopy,
-    subCopy: siteConfig.hero.subCopy,
-    ctaText: siteConfig.hero.ctaText,
-  });
+  // 항상 기본값으로 시작 (siteConfig에서)
+  const [heroConfig, setHeroConfig] = useState(siteConfig.hero);
 
   // 서버에서 Hero 데이터 로드
   useEffect(() => {
@@ -21,13 +18,15 @@ export function HeroSection() {
         const response = await fetch("/api/admin?type=hero", {
           cache: "no-store",
         });
-        const result = await response.json();
-        if (result.success && result.data) {
-          setHeroConfig((prev) => ({ ...prev, ...result.data }));
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            setHeroConfig((prev) => ({ ...prev, ...result.data }));
+          }
         }
       } catch (error) {
         console.error("Failed to fetch hero config:", error);
-        // API 실패 시 기본 데이터 유지
+        // API 실패 시 기본 데이터 유지 (siteConfig)
       }
     }
     fetchHeroConfig();
