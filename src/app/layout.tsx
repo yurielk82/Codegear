@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { siteConfig } from "@/config/siteConfig";
 
 const geistSans = Geist({
@@ -63,16 +61,7 @@ export default function RootLayout({
         {/* Background Mesh */}
         <div className="mesh-gradient" />
         
-        {/* Header */}
-        <Header />
-        
-        {/* Main Content */}
-        <main className="min-h-screen">
-          {children}
-        </main>
-        
-        {/* Footer */}
-        <Footer />
+        {children}
       </body>
     </html>
   );
