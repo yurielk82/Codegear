@@ -53,16 +53,19 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             {[
-              { value: "2024", label: "설립연도" },
-              { value: "8+", label: "핵심 기술" },
-              { value: "27", label: "사업 영역" },
-              { value: "∞", label: "가능성" },
+              { value: "2018", label: "사업 시작", subLabel: "개인사업자" },
+              { value: "2026", label: "법인 설립", subLabel: "주식회사" },
+              { value: "8+", label: "핵심 기술", subLabel: "" },
+              { value: "27", label: "사업 영역", subLabel: "" },
             ].map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">
+                <div className="text-3xl md:text-4xl font-bold gradient-text mb-1">
                   {stat.value}
                 </div>
-                <div className="text-gray-500 text-sm">{stat.label}</div>
+                <div className="text-gray-400 text-sm font-medium">{stat.label}</div>
+                {stat.subLabel && (
+                  <div className="text-gray-600 text-xs mt-0.5">{stat.subLabel}</div>
+                )}
               </div>
             ))}
           </motion.div>
