@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Home,
   FileText,
@@ -16,7 +15,6 @@ import {
   Shield,
   ChevronRight,
 } from "lucide-react";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 const sidebarItems = [
   { name: "대시보드", href: "/admin", icon: Home },
@@ -34,14 +32,34 @@ export default function AdminLayout({
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useLocalStorage("admin-auth", false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+
+  // 클라이언트에서 로그인 상태 확인
+  useEffect(() => {
+    const stored = localStorage.getItem("admin-auth");
+    if (stored) {
+      try {
+        setIsLoggedIn(JSON.parse(stored));
+      } catch {
+        setIsLoggedIn(false);
+      }
+    }
+    setIsLoading(false);
+  }, []);
+
+  // 로그인 상태 저장
+  const saveLoginState = (value: boolean) => {
+    setIsLoggedIn(value);
+    localStorage.setItem("admin-auth", JSON.stringify(value));
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === "codegear2024") {
-      setIsLoggedIn(true);
+      saveLoginState(true);
       setLoginError("");
     } else {
       setLoginError("비밀번호가 올바르지 않습니다.");
@@ -49,22 +67,29 @@ export default function AdminLayout({
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    saveLoginState(false);
+    setPassword("");
   };
 
-  const closeMobileSidebar = () => {
+  // 페이지 이동 시 모바일 사이드바 닫기
+  useEffect(() => {
     setIsMobileSidebarOpen(false);
-  };
+  }, [pathname]);
+
+  // 로딩 중
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   // Login Screen
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
-        >
+        <div className="w-full max-w-md">
           <div className="glass-card p-8">
             <div className="text-center mb-8">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-4">
@@ -116,7 +141,7 @@ export default function AdminLayout({
               </Link>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -142,13 +167,7 @@ export default function AdminLayout({
               <span className="text-white font-bold">CG</span>
             </div>
             {isSidebarOpen && (
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-white font-bold"
-              >
-                Admin
-              </motion.span>
+              <span className="text-white font-bold">Admin</span>
             )}
           </Link>
         </div>
@@ -158,12 +177,13 @@ export default function AdminLayout({
           <ul className="space-y-2">
             {sidebarItems.map((item) => {
               const isActive = pathname === item.href;
+              const IconComponent = item.icon;
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
                     className={`
-                      flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer w-full
+                      flex items-center gap-3 px-4 py-3 rounded-xl transition-all w-full
                       ${
                         isActive
                           ? "bg-blue-500/20 text-blue-400"
@@ -171,7 +191,7 @@ export default function AdminLayout({
                       }
                     `}
                   >
-                    <item.icon size={20} />
+                    <IconComponent size={20} />
                     {isSidebarOpen && <span>{item.name}</span>}
                   </Link>
                 </li>
@@ -226,64 +246,59 @@ export default function AdminLayout({
         </button>
       </header>
 
+      {/* Mobile Sidebar Overlay */}
+      {isMobileSidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/60 z-40"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
       {/* Mobile Sidebar */}
-      <AnimatePresence>
-        {isMobileSidebarOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="lg:hidden fixed inset-0 bg-black/60 z-40"
-              onClick={closeMobileSidebar}
-            />
-            <motion.aside
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 20 }}
-              className="lg:hidden fixed top-0 left-0 h-full w-64 bg-[#12121a] border-r border-white/5 z-50 pt-16"
-            >
-              <nav className="p-4">
-                <ul className="space-y-2">
-                  {sidebarItems.map((item) => {
-                    const isActive = pathname === item.href;
-                    return (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          onClick={closeMobileSidebar}
-                          className={`
-                            flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer w-full
-                            ${
-                              isActive
-                                ? "bg-blue-500/20 text-blue-400"
-                                : "text-gray-400 hover:bg-white/5 hover:text-white"
-                            }
-                          `}
-                        >
-                          <item.icon size={20} />
-                          <span>{item.name}</span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </nav>
-              <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/5">
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all"
-                >
-                  <LogOut size={20} />
-                  <span>로그아웃</span>
-                </button>
-              </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+      <aside
+        className={`
+          lg:hidden fixed top-0 left-0 h-full w-64 bg-[#12121a] border-r border-white/5 z-50 pt-16
+          transform transition-transform duration-300
+          ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
+      >
+        <nav className="p-4">
+          <ul className="space-y-2">
+            {sidebarItems.map((item) => {
+              const isActive = pathname === item.href;
+              const IconComponent = item.icon;
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`
+                      flex items-center gap-3 px-4 py-3 rounded-xl transition-all w-full
+                      ${
+                        isActive
+                          ? "bg-blue-500/20 text-blue-400"
+                          : "text-gray-400 hover:bg-white/5 hover:text-white"
+                      }
+                    `}
+                  >
+                    <IconComponent size={20} />
+                    <span>{item.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/5">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all"
+          >
+            <LogOut size={20} />
+            <span>로그아웃</span>
+          </button>
+        </div>
+      </aside>
 
       {/* Main Content */}
       <main

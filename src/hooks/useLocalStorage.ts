@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 /**
  * useLocalStorage - LocalStorage와 동기화되는 상태 관리 훅
@@ -14,8 +14,7 @@ export function useLocalStorage<T>(
   initialValue: T
 ): [T, (value: T | ((val: T) => T)) => void, () => void] {
   // 초기값을 가져오는 함수
-  const readValue = useCallback((): T => {
-    // SSR 환경에서는 초기값 반환
+  const getStoredValue = (): T => {
     if (typeof window === "undefined") {
       return initialValue;
     }
@@ -27,52 +26,48 @@ export function useLocalStorage<T>(
       console.warn(`Error reading localStorage key "${key}":`, error);
       return initialValue;
     }
-  }, [initialValue, key]);
+  };
 
-  // 상태 초기화
-  const [storedValue, setStoredValue] = useState<T>(initialValue);
-  const [isInitialized, setIsInitialized] = useState(false);
+  // 상태 초기화 - 즉시 localStorage에서 읽기
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    if (typeof window === "undefined") {
+      return initialValue;
+    }
+    return getStoredValue();
+  });
 
-  // 클라이언트에서 LocalStorage 값으로 초기화
-  useEffect(() => {
-    setStoredValue(readValue());
-    setIsInitialized(true);
-  }, [readValue]);
+  // ref로 최신 값 추적 (closure 문제 방지)
+  const storedValueRef = useRef(storedValue);
+  storedValueRef.current = storedValue;
 
   // 값 설정 함수
   const setValue = useCallback(
     (value: T | ((val: T) => T)) => {
       try {
-        // 함수형 업데이트 지원
+        // 함수형 업데이트 지원 - ref에서 최신 값 사용
         const valueToStore =
-          value instanceof Function ? value(storedValue) : value;
+          value instanceof Function ? value(storedValueRef.current) : value;
         
         // 상태 업데이트
         setStoredValue(valueToStore);
+        storedValueRef.current = valueToStore;
         
         // LocalStorage에 저장
         if (typeof window !== "undefined") {
           window.localStorage.setItem(key, JSON.stringify(valueToStore));
-          
-          // 다른 탭/창에 변경 알림
-          window.dispatchEvent(
-            new StorageEvent("storage", {
-              key,
-              newValue: JSON.stringify(valueToStore),
-            })
-          );
         }
       } catch (error) {
         console.warn(`Error setting localStorage key "${key}":`, error);
       }
     },
-    [key, storedValue]
+    [key]
   );
 
   // 값 삭제 함수
   const removeValue = useCallback(() => {
     try {
       setStoredValue(initialValue);
+      storedValueRef.current = initialValue;
       if (typeof window !== "undefined") {
         window.localStorage.removeItem(key);
       }
@@ -86,7 +81,9 @@ export function useLocalStorage<T>(
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === key && event.newValue !== null) {
         try {
-          setStoredValue(JSON.parse(event.newValue) as T);
+          const newValue = JSON.parse(event.newValue) as T;
+          setStoredValue(newValue);
+          storedValueRef.current = newValue;
         } catch (error) {
           console.warn(`Error parsing storage event for key "${key}":`, error);
         }
@@ -97,7 +94,15 @@ export function useLocalStorage<T>(
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [key]);
 
-  return [isInitialized ? storedValue : initialValue, setValue, removeValue];
+  // Hydration 후 localStorage 값으로 동기화
+  useEffect(() => {
+    const stored = getStoredValue();
+    setStoredValue(stored);
+    storedValueRef.current = stored;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  return [storedValue, setValue, removeValue];
 }
 
 /**
