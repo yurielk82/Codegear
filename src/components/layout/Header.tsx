@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
 
 export function Header() {
-  const router = useRouter();
-  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -20,53 +18,6 @@ export function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // 스크롤 함수
-  const scrollToElement = useCallback((elementId: string) => {
-    const element = document.querySelector(elementId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  }, []);
-
-  // 홈으로 이동 + 최상단 스크롤
-  const handleLogoClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    if (pathname === "/") {
-      // 이미 홈에 있으면 최상단으로 스크롤
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      // 다른 페이지에서는 홈으로 이동
-      router.push("/");
-    }
-  }, [pathname, router]);
-
-  // 앵커 링크 또는 페이지 이동 처리
-  const handleNavClick = useCallback((e: React.MouseEvent, href: string) => {
-    e.preventDefault();
-    setIsMobileMenuOpen(false);
-    
-    if (href === "/") {
-      // 홈
-      if (pathname === "/") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        router.push("/");
-      }
-    } else if (href.startsWith("#")) {
-      // 앵커 링크
-      if (pathname === "/") {
-        // 현재 홈 페이지면 바로 스크롤
-        scrollToElement(href);
-      } else {
-        // 다른 페이지면 홈으로 이동 후 스크롤
-        router.push("/" + href);
-      }
-    } else {
-      // 일반 페이지 이동
-      router.push(href);
-    }
-  }, [pathname, router, scrollToElement]);
 
   return (
     <>
@@ -86,11 +37,7 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-6">
           <nav className="flex items-center justify-between">
             {/* Logo */}
-            <button 
-              type="button"
-              onClick={handleLogoClick}
-              className="flex items-center gap-3 group cursor-pointer"
-            >
+            <Link href="/" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <span className="text-white font-bold text-lg">CG</span>
               </div>
@@ -98,37 +45,32 @@ export function Header() {
                 <span className="text-white font-bold text-xl">Code Gear</span>
                 <span className="block text-gray-500 text-xs">주식회사 코드기어</span>
               </div>
-            </button>
+            </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
               {siteConfig.navigation.main.map((item) => (
-                <button
+                <Link
                   key={item.name}
-                  type="button"
-                  onClick={(e) => handleNavClick(e, item.href)}
-                  className="text-gray-400 hover:text-white transition-colors text-sm font-medium cursor-pointer"
+                  href={item.href}
+                  className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
                 >
                   {item.name}
-                </button>
+                </Link>
               ))}
             </div>
 
-            {/* Right Actions */}
-            <div className="flex items-center gap-4">
-              {/* Mobile Menu Button */}
-              <button
-                type="button"
-                className="md:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                {isMobileMenuOpen ? (
-                  <X size={24} className="text-white" />
-                ) : (
-                  <Menu size={24} className="text-white" />
-                )}
-              </button>
-            </div>
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? (
+                <X size={24} className="text-white" />
+              ) : (
+                <Menu size={24} className="text-white" />
+              )}
+            </button>
           </nav>
         </div>
       </motion.header>
@@ -164,17 +106,15 @@ export function Header() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 + index * 0.05 }}
                   >
-                    <button
-                      type="button"
-                      onClick={(e) => handleNavClick(e, item.href)}
-                      className="block py-3 text-2xl font-medium text-white hover:text-blue-400 transition-colors w-full text-left"
+                    <Link
+                      href={item.href}
+                      className="block py-3 text-2xl font-medium text-white hover:text-blue-400 transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {item.name}
-                    </button>
+                    </Link>
                   </motion.div>
                 ))}
-                
-
               </div>
             </motion.nav>
           </motion.div>
