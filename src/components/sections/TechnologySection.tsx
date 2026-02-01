@@ -1,9 +1,61 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { TechCard } from "@/components/ui/GlassCard";
-import { Icon, IconName } from "@/components/ui/Icons";
-import { siteConfig } from "@/config/siteConfig";
+import { Cpu, Wrench, Package, Lightbulb } from "lucide-react";
+
+// 4개 카테고리로 구성된 핵심 연구분야
+const technologyCategories = [
+  {
+    id: "rd-engineering",
+    title: "R&D & Engineering",
+    titleKr: "연구개발 및 엔지니어링",
+    icon: Cpu,
+    gradient: "from-blue-500 to-cyan-500",
+    items: [
+      "전자회로 설계",
+      "AI 알고리즘 개발",
+      "시스템 반도체 IP 개발",
+      "임베디드 소프트웨어",
+    ],
+  },
+  {
+    id: "manufacturing",
+    title: "Manufacturing & Prototype",
+    titleKr: "제조 및 시제품",
+    icon: Wrench,
+    gradient: "from-purple-500 to-pink-500",
+    items: [
+      "시제품 제작 서비스",
+      "하드웨어 가속기 제작",
+      "수리 및 유지보수",
+      "양산 지원",
+    ],
+  },
+  {
+    id: "distribution",
+    title: "Distribution & Trade",
+    titleKr: "유통 및 무역",
+    icon: Package,
+    gradient: "from-orange-500 to-red-500",
+    items: [
+      "전자부품 도소매",
+      "반도체 소자 공급",
+      "수출입 대행",
+    ],
+  },
+  {
+    id: "consulting",
+    title: "Consulting & IP",
+    titleKr: "컨설팅 및 지식재산",
+    icon: Lightbulb,
+    gradient: "from-green-500 to-emerald-500",
+    items: [
+      "기술 사업화 컨설팅",
+      "창업 인큐베이팅",
+      "지식재산권 관리",
+    ],
+  },
+];
 
 export function TechnologySection() {
   return (
@@ -27,30 +79,52 @@ export function TechnologySection() {
             핵심 연구 분야
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Code Gear는 차세대 지능형 하드웨어 기술을 선도합니다.
+            Code Gear는 연구개발부터 제조, 유통, 컨설팅까지
             <br />
-            NPU 설계부터 로봇 제어 시스템까지, 혁신적인 솔루션을 제공합니다.
+            기술 기반 토탈 솔루션을 제공합니다.
           </p>
         </motion.div>
 
         {/* Technology Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {siteConfig.technologies.map((tech, index) => (
-            <TechCard
-              key={tech.id}
-              title={tech.title}
-              subtitle={tech.subtitle}
-              description={tech.description}
-              icon={
-                <Icon
-                  name={tech.icon as IconName}
-                  size={24}
-                  className="text-white"
-                />
-              }
-              gradient={tech.gradient}
-              delay={index * 0.1}
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {technologyCategories.map((category, index) => (
+            <motion.div
+              key={category.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="glass-card group hover:border-white/20 transition-all duration-300"
+            >
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-start gap-4 mb-5">
+                  <div
+                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}
+                  >
+                    <category.icon size={24} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white mb-0.5">
+                      {category.title}
+                    </h3>
+                    <p className="text-gray-500 text-sm">{category.titleKr}</p>
+                  </div>
+                </div>
+
+                {/* Items */}
+                <div className="flex flex-wrap gap-2">
+                  {category.items.map((item, itemIndex) => (
+                    <span
+                      key={itemIndex}
+                      className="px-3 py-1.5 rounded-lg bg-white/5 text-gray-300 text-sm border border-white/5 hover:bg-white/10 hover:border-white/10 transition-colors"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           ))}
         </div>
 
