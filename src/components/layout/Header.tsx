@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Menu, X, Settings } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,6 +20,22 @@ export function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // 앵커 링크 또는 페이지 이동 처리
+  const handleNavClick = (href: string) => {
+    setIsMobileMenuOpen(false);
+    
+    if (href.startsWith("#")) {
+      // 앵커 링크 - 스크롤
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      // 일반 페이지 - 라우팅
+      router.push(href);
+    }
+  };
 
   return (
     <>
@@ -50,26 +68,26 @@ export function Header() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
               {siteConfig.navigation.main.map((item) => (
-                <Link
+                <button
                   key={item.name}
-                  href={item.href}
-                  className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
+                  onClick={() => handleNavClick(item.href)}
+                  className="text-gray-400 hover:text-white transition-colors text-sm font-medium cursor-pointer"
                 >
                   {item.name}
-                </Link>
+                </button>
               ))}
             </div>
 
             {/* Right Actions */}
             <div className="flex items-center gap-4">
               {/* Admin Link */}
-              <Link
-                href="/admin"
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all text-sm"
+              <button
+                onClick={() => handleNavClick("/admin")}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all text-sm cursor-pointer"
               >
                 <Settings size={16} />
                 Admin
-              </Link>
+              </button>
 
               {/* Mobile Menu Button */}
               <button
@@ -118,13 +136,12 @@ export function Header() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 + index * 0.05 }}
                   >
-                    <Link
-                      href={item.href}
-                      className="block py-3 text-2xl font-medium text-white hover:text-blue-400 transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
+                    <button
+                      onClick={() => handleNavClick(item.href)}
+                      className="block py-3 text-2xl font-medium text-white hover:text-blue-400 transition-colors text-left w-full"
                     >
                       {item.name}
-                    </Link>
+                    </button>
                   </motion.div>
                 ))}
                 
@@ -135,14 +152,13 @@ export function Header() {
                   transition={{ delay: 0.3 }}
                   className="pt-4 border-t border-white/10"
                 >
-                  <Link
-                    href="/admin"
+                  <button
+                    onClick={() => handleNavClick("/admin")}
                     className="flex items-center gap-2 py-3 text-gray-400 hover:text-white transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <Settings size={20} />
                     Admin Dashboard
-                  </Link>
+                  </button>
                 </motion.div>
               </div>
             </motion.nav>
