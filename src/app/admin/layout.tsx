@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home,
@@ -31,13 +31,13 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useLocalStorage("admin-auth", false);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
 
-  // Simple demo login (in production, use proper authentication)
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === "codegear2024") {
@@ -52,10 +52,9 @@ export default function AdminLayout({
     setIsLoggedIn(false);
   };
 
-  const handleNavClick = (e: React.MouseEvent, href: string) => {
-    e.preventDefault();
+  const navigateTo = (href: string) => {
     setIsMobileSidebarOpen(false);
-    window.location.href = href;
+    router.push(href);
   };
 
   // Login Screen
@@ -110,13 +109,13 @@ export default function AdminLayout({
             </p>
 
             <div className="mt-6 pt-6 border-t border-white/10 text-center">
-              <a 
-                href="/" 
-                onClick={(e) => handleNavClick(e, "/")}
+              <button 
+                type="button"
+                onClick={() => navigateTo("/")}
                 className="text-gray-400 hover:text-white text-sm"
               >
                 ← 메인 사이트로 돌아가기
-              </a>
+              </button>
             </div>
           </div>
         </motion.div>
@@ -137,9 +136,9 @@ export default function AdminLayout({
       >
         {/* Logo */}
         <div className="p-6 border-b border-white/5">
-          <a 
-            href="/" 
-            onClick={(e) => handleNavClick(e, "/")}
+          <button 
+            type="button"
+            onClick={() => navigateTo("/")}
             className="flex items-center gap-3"
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
@@ -154,7 +153,7 @@ export default function AdminLayout({
                 Admin
               </motion.span>
             )}
-          </a>
+          </button>
         </div>
 
         {/* Navigation */}
@@ -164,11 +163,11 @@ export default function AdminLayout({
               const isActive = pathname === item.href;
               return (
                 <li key={item.href}>
-                  <a
-                    href={item.href}
-                    onClick={(e) => handleNavClick(e, item.href)}
+                  <button
+                    type="button"
+                    onClick={() => navigateTo(item.href)}
                     className={`
-                      flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer
+                      flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer w-full text-left
                       ${
                         isActive
                           ? "bg-blue-500/20 text-blue-400"
@@ -178,7 +177,7 @@ export default function AdminLayout({
                   >
                     <item.icon size={20} />
                     {isSidebarOpen && <span>{item.name}</span>}
-                  </a>
+                  </button>
                 </li>
               );
             })}
@@ -188,6 +187,7 @@ export default function AdminLayout({
         {/* Toggle & Logout */}
         <div className="p-4 border-t border-white/5">
           <button
+            type="button"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all mb-2"
           >
@@ -200,6 +200,7 @@ export default function AdminLayout({
             {isSidebarOpen && <span>접기</span>}
           </button>
           <button
+            type="button"
             onClick={handleLogout}
             className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all"
           >
@@ -211,17 +212,18 @@ export default function AdminLayout({
 
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#12121a] border-b border-white/5 z-40 flex items-center justify-between px-4">
-        <a 
-          href="/" 
-          onClick={(e) => handleNavClick(e, "/")}
+        <button 
+          type="button"
+          onClick={() => navigateTo("/")}
           className="flex items-center gap-3"
         >
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
             <span className="text-white font-bold">CG</span>
           </div>
           <span className="text-white font-bold">Admin</span>
-        </a>
+        </button>
         <button
+          type="button"
           onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
           className="p-2 text-white"
         >
@@ -253,11 +255,11 @@ export default function AdminLayout({
                     const isActive = pathname === item.href;
                     return (
                       <li key={item.href}>
-                        <a
-                          href={item.href}
-                          onClick={(e) => handleNavClick(e, item.href)}
+                        <button
+                          type="button"
+                          onClick={() => navigateTo(item.href)}
                           className={`
-                            flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer
+                            flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer w-full text-left
                             ${
                               isActive
                                 ? "bg-blue-500/20 text-blue-400"
@@ -267,7 +269,7 @@ export default function AdminLayout({
                         >
                           <item.icon size={20} />
                           <span>{item.name}</span>
-                        </a>
+                        </button>
                       </li>
                     );
                   })}
@@ -275,6 +277,7 @@ export default function AdminLayout({
               </nav>
               <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/5">
                 <button
+                  type="button"
                   onClick={handleLogout}
                   className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all"
                 >

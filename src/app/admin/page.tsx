@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   FileText,
@@ -50,9 +51,10 @@ const quickActions = [
 ];
 
 export default function AdminDashboard() {
-  const handleNavClick = (e: React.MouseEvent, href: string) => {
-    e.preventDefault();
-    window.location.href = href;
+  const router = useRouter();
+
+  const handleNavClick = (href: string) => {
+    router.push(href);
   };
 
   return (
@@ -112,11 +114,11 @@ export default function AdminDashboard() {
           <h2 className="text-lg font-semibold text-white mb-4">빠른 작업</h2>
           <div className="space-y-3">
             {quickActions.map((action) => (
-              <a
+              <button
                 key={action.href}
-                href={action.href}
-                onClick={(e) => handleNavClick(e, action.href)}
-                className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group cursor-pointer"
+                type="button"
+                onClick={() => handleNavClick(action.href)}
+                className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors group cursor-pointer w-full text-left"
               >
                 <div className="flex items-center gap-3">
                   <action.icon size={18} className="text-blue-400" />
@@ -126,7 +128,7 @@ export default function AdminDashboard() {
                   size={16}
                   className="text-gray-500 group-hover:text-white transition-colors"
                 />
-              </a>
+              </button>
             ))}
           </div>
         </motion.div>
@@ -140,13 +142,13 @@ export default function AdminDashboard() {
         >
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white">최근 공고</h2>
-            <a
-              href="/admin/notices"
-              onClick={(e) => handleNavClick(e, "/admin/notices")}
+            <button
+              type="button"
+              onClick={() => handleNavClick("/admin/notices")}
               className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1 cursor-pointer"
             >
               전체 보기 <ArrowRight size={14} />
-            </a>
+            </button>
           </div>
           <div className="space-y-3">
             {sampleNotices.slice(0, 4).map((notice) => (

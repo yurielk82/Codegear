@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Settings } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
 
 export function Header() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -18,31 +21,52 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // 스크롤 함수
+  const scrollToElement = useCallback((elementId: string) => {
+    const element = document.querySelector(elementId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
+
   // 홈으로 이동 + 최상단 스크롤
-  const handleLogoClick = (e: React.MouseEvent) => {
+  const handleLogoClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    window.location.href = "/";
-  };
+    if (pathname === "/") {
+      // 이미 홈에 있으면 최상단으로 스크롤
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      // 다른 페이지에서는 홈으로 이동
+      router.push("/");
+    }
+  }, [pathname, router]);
 
   // 앵커 링크 또는 페이지 이동 처리
-  const handleNavClick = (e: React.MouseEvent, href: string) => {
+  const handleNavClick = useCallback((e: React.MouseEvent, href: string) => {
     e.preventDefault();
     setIsMobileMenuOpen(false);
     
     if (href === "/") {
-      // 홈 - 최상단으로
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      // 홈
+      if (pathname === "/") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        router.push("/");
+      }
     } else if (href.startsWith("#")) {
-      // 앵커 링크 - 스크롤
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
+      // 앵커 링크
+      if (pathname === "/") {
+        // 현재 홈 페이지면 바로 스크롤
+        scrollToElement(href);
+      } else {
+        // 다른 페이지면 홈으로 이동 후 스크롤
+        router.push("/" + href);
       }
     } else {
-      // 일반 페이지 - 직접 이동
-      window.location.href = href;
+      // 일반 페이지 이동
+      router.push(href);
     }
-  };
+  }, [pathname, router, scrollToElement]);
 
   return (
     <>
@@ -62,8 +86,8 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-6">
           <nav className="flex items-center justify-between">
             {/* Logo */}
-            <a 
-              href="/" 
+            <button 
+              type="button"
               onClick={handleLogoClick}
               className="flex items-center gap-3 group cursor-pointer"
             >
@@ -74,36 +98,37 @@ export function Header() {
                 <span className="text-white font-bold text-xl">Code Gear</span>
                 <span className="block text-gray-500 text-xs">주식회사 코드기어</span>
               </div>
-            </a>
+            </button>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
               {siteConfig.navigation.main.map((item) => (
-                <a
+                <button
                   key={item.name}
-                  href={item.href}
+                  type="button"
                   onClick={(e) => handleNavClick(e, item.href)}
                   className="text-gray-400 hover:text-white transition-colors text-sm font-medium cursor-pointer"
                 >
                   {item.name}
-                </a>
+                </button>
               ))}
             </div>
 
             {/* Right Actions */}
             <div className="flex items-center gap-4">
               {/* Admin Link */}
-              <a
-                href="/admin"
+              <button
+                type="button"
                 onClick={(e) => handleNavClick(e, "/admin")}
                 className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all text-sm cursor-pointer"
               >
                 <Settings size={16} />
                 Admin
-              </a>
+              </button>
 
               {/* Mobile Menu Button */}
               <button
+                type="button"
                 className="md:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
@@ -149,13 +174,13 @@ export function Header() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.1 + index * 0.05 }}
                   >
-                    <a
-                      href={item.href}
+                    <button
+                      type="button"
                       onClick={(e) => handleNavClick(e, item.href)}
-                      className="block py-3 text-2xl font-medium text-white hover:text-blue-400 transition-colors"
+                      className="block py-3 text-2xl font-medium text-white hover:text-blue-400 transition-colors w-full text-left"
                     >
                       {item.name}
-                    </a>
+                    </button>
                   </motion.div>
                 ))}
                 
@@ -166,14 +191,14 @@ export function Header() {
                   transition={{ delay: 0.3 }}
                   className="pt-4 border-t border-white/10"
                 >
-                  <a
-                    href="/admin"
+                  <button
+                    type="button"
                     onClick={(e) => handleNavClick(e, "/admin")}
-                    className="flex items-center gap-2 py-3 text-gray-400 hover:text-white transition-colors"
+                    className="flex items-center gap-2 py-3 text-gray-400 hover:text-white transition-colors w-full"
                   >
                     <Settings size={20} />
                     Admin Dashboard
-                  </a>
+                  </button>
                 </motion.div>
               </div>
             </motion.nav>
