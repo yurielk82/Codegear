@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -51,6 +50,12 @@ export default function AdminLayout({
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+  };
+
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    setIsMobileSidebarOpen(false);
+    window.location.href = href;
   };
 
   // Login Screen
@@ -105,9 +110,13 @@ export default function AdminLayout({
             </p>
 
             <div className="mt-6 pt-6 border-t border-white/10 text-center">
-              <Link href="/" className="text-gray-400 hover:text-white text-sm">
+              <a 
+                href="/" 
+                onClick={(e) => handleNavClick(e, "/")}
+                className="text-gray-400 hover:text-white text-sm"
+              >
                 ← 메인 사이트로 돌아가기
-              </Link>
+              </a>
             </div>
           </div>
         </motion.div>
@@ -128,7 +137,11 @@ export default function AdminLayout({
       >
         {/* Logo */}
         <div className="p-6 border-b border-white/5">
-          <Link href="/" className="flex items-center gap-3">
+          <a 
+            href="/" 
+            onClick={(e) => handleNavClick(e, "/")}
+            className="flex items-center gap-3"
+          >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold">CG</span>
             </div>
@@ -141,7 +154,7 @@ export default function AdminLayout({
                 Admin
               </motion.span>
             )}
-          </Link>
+          </a>
         </div>
 
         {/* Navigation */}
@@ -151,10 +164,11 @@ export default function AdminLayout({
               const isActive = pathname === item.href;
               return (
                 <li key={item.href}>
-                  <Link
+                  <a
                     href={item.href}
+                    onClick={(e) => handleNavClick(e, item.href)}
                     className={`
-                      flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                      flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer
                       ${
                         isActive
                           ? "bg-blue-500/20 text-blue-400"
@@ -164,7 +178,7 @@ export default function AdminLayout({
                   >
                     <item.icon size={20} />
                     {isSidebarOpen && <span>{item.name}</span>}
-                  </Link>
+                  </a>
                 </li>
               );
             })}
@@ -197,12 +211,16 @@ export default function AdminLayout({
 
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#12121a] border-b border-white/5 z-40 flex items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-3">
+        <a 
+          href="/" 
+          onClick={(e) => handleNavClick(e, "/")}
+          className="flex items-center gap-3"
+        >
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
             <span className="text-white font-bold">CG</span>
           </div>
           <span className="text-white font-bold">Admin</span>
-        </Link>
+        </a>
         <button
           onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
           className="p-2 text-white"
@@ -235,11 +253,11 @@ export default function AdminLayout({
                     const isActive = pathname === item.href;
                     return (
                       <li key={item.href}>
-                        <Link
+                        <a
                           href={item.href}
-                          onClick={() => setIsMobileSidebarOpen(false)}
+                          onClick={(e) => handleNavClick(e, item.href)}
                           className={`
-                            flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                            flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer
                             ${
                               isActive
                                 ? "bg-blue-500/20 text-blue-400"
@@ -249,7 +267,7 @@ export default function AdminLayout({
                         >
                           <item.icon size={20} />
                           <span>{item.name}</span>
-                        </Link>
+                        </a>
                       </li>
                     );
                   })}
