@@ -36,7 +36,7 @@ export function Header() {
       >
         <div className="max-w-7xl mx-auto px-6">
           <nav className="flex items-center justify-between">
-            {/* Logo */}
+            {/* Logo - 왼쪽 */}
             <Link href="/" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <span className="text-white font-bold text-lg">CG</span>
@@ -47,30 +47,37 @@ export function Header() {
               </div>
             </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
-              {siteConfig.navigation.main.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
-                >
-                  {item.name}
-                </Link>
-              ))}
+            {/* Desktop Navigation - 완전 중앙 배치 */}
+            <div className="hidden md:flex items-center justify-center absolute left-1/2 -translate-x-1/2">
+              <div className="flex items-center gap-10">
+                {siteConfig.navigation.main.map((item) => (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className="text-gray-300 hover:text-white transition-colors text-base font-medium tracking-wide"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
             </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? (
-                <X size={24} className="text-white" />
-              ) : (
-                <Menu size={24} className="text-white" />
-              )}
-            </button>
+            {/* 오른쪽 영역 (균형을 위한 빈 공간 또는 모바일 버튼) */}
+            <div className="flex items-center">
+              {/* Mobile Menu Button */}
+              <button
+                className="md:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? (
+                  <X size={24} className="text-white" />
+                ) : (
+                  <Menu size={24} className="text-white" />
+                )}
+              </button>
+              {/* 데스크탑에서 균형을 맞추기 위한 투명 공간 */}
+              <div className="hidden md:block w-[140px]" />
+            </div>
           </nav>
         </div>
       </motion.header>
